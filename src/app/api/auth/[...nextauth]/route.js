@@ -38,8 +38,6 @@ export const authOptions = {
         } else {
           throw new Error('Invalid email or password');
         }
-
-        return null;
       },
     }),
   ],
