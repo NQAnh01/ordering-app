@@ -29,7 +29,7 @@ const Hero = () => {
         <Image
           src={'/Bracelet.png'}
           layout={'fill'}
-          objectFit={'contain'}
+          style={{ objectFit: 'contain', layout: 'fill' }}
           alt={'bracelet'}
         />
       </div>

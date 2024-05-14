@@ -1,4 +1,6 @@
 'use client';
+import EditableImage from '@/components/layouts/EditableImage';
+import UserTabs from '@/components/layouts/UserTabs';
 import { useSession } from 'next-auth/react';
 import Image from 'next/image';
 import { redirect } from 'next/navigation';
@@ -7,12 +9,15 @@ import toast from 'react-hot-toast';
 
 const ProfilePage = () => {
   const session = useSession();
-  console.log('session: ', session);
   const [username, setUsername] = useState('');
   const [avatar, setAvatar] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [profileFetched, setProfileFetched] = useState(false);
   const { status } = session;
+
+  const nameImg = session?.data?.user?.email.split('@')[0];
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -22,6 +27,8 @@ const ProfilePage = () => {
         response.json().then((data) => {
           setPhone(data.phone);
           setAddress(data.address);
+          setIsAdmin(data.admin);
+          setProfileFetched(true);
         });
       });
     }
@@ -53,36 +60,7 @@ const ProfilePage = () => {
     });
   };
 
-  const handleChangeAvatar = async (ev) => {
-    ev.preventDefault();
-    const image = ev.target.files[0];
-    if (image) {
-      const data = new FormData();
-      const nameImg = session.data.user.email.split('@')[0];
-      data.append('nameImg', nameImg);
-      data.append('image', image);
-      const loadingPromise = new Promise(async (resolve, reject) => {
-        const response = await fetch('api/upload', {
-          method: 'POST',
-          body: data,
-        });
-        if (response.ok) {
-          // Extract the imageUrl from the response
-          const imageUrl = await response.json();
-          setAvatar(imageUrl);
-          resolve();
-        } else reject();
-      });
-
-      await toast.promise(loadingPromise, {
-        loading: 'Uploading...',
-        success: 'upload successfully',
-        error: 'Error when upload image',
-      });
-    }
-  };
-
-  if (status === 'loading') {
+  if (status === 'loading' || !profileFetched) {
     return 'Loading...';
   }
 
@@ -92,31 +70,16 @@ const ProfilePage = () => {
 
   return (
     <section className='mt-8'>
-      <h1 className='text-center text-primary text-4xl mb-4'>Profile page</h1>
+      <UserTabs isAdmin={isAdmin} />
       <form className='max-w-md mx-auto' onSubmit={handleProfileUpdate}>
         <div className='flex gap-4 '>
           <div>
             <div className='p-2 rounded-lg relative max-w-[120px]'>
-              {avatar && (
-                <Image
-                  className='rounded-lg h-full w-full'
-                  src={avatar}
-                  width={250}
-                  height={250}
-                  alt={'avatar'}
-                />
-              )}
-              <label>
-                <input
-                  id='fileInput'
-                  type='file'
-                  className='hidden'
-                  onChange={handleChangeAvatar}
-                />
-                <span className='text-center block rounded-lg border border-gray-100 p-1 cursor-pointer'>
-                  Change
-                </span>
-              </label>
+              <EditableImage
+                link={avatar}
+                setLink={setAvatar}
+                nameImg={`images/avatar/${nameImg}`}
+              />
             </div>
           </div>
           <div className=' grow'>

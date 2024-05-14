@@ -16,8 +16,6 @@ const LoginPage = () => {
       console.error('Email and password are required');
       return;
     }
-    console.log('Email', email, password);
-
     setLoginInProgress(true);
 
     await signIn('credentials', {
